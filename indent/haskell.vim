@@ -56,6 +56,9 @@ function! GetHaskellIndent(lnum)
     elseif l:line =~# '\<do$'
         let l:indent = match(l:line, '\S') + &shiftwidth
 
+    elseif l:line =~# '->$';
+        let l:indent = match(l:line, '\S') + &shiftwidth
+
     elseif l:line =~# '\<\%(do\|let\|where\|in\|then\|else\)$'
         let l:indent = indent(a:lnum - 1)
 
