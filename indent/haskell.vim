@@ -11,45 +11,54 @@ setlocal indentkeys=!^F,o,O
 
 
 function! GetHaskellIndent(lnum)
+    " the line above the current line
     let l:line = getline(a:lnum - 1)
 
+    " when the line is just whitespace, match to the same level.
     if l:line =~# '^\s*$'
         return match(l:line, '\S')
     endif
 
 
+    " the indent level of the previous line
     let l:indent = indent(a:lnum - 1)
 
-    if l:line =~# '^data\>.*=.\+'
-        let l:indent = &shiftwidth
+    " indent to the last open brace
+    if l:line =~# '{[^}]*$'
+        let l:indent = match(l:line, '{')
 
+    " when in a data or newtype declaration, indent to the '='
+    elseif l:line =~# '^\(data\|newtype\)\>.*=.\+'
+        let l:indent = match(l:line, '=')
+
+    " when in a GADT, class, or instance, just indent by shiftWidth
     elseif l:line =~# '^data\>[^=]\+\|^class\>\|^instance\>'
-        let l:indent = &shiftwidth
-
-    elseif l:line =~# '^newtype\>.*=.\+'
-        let l:indent = &shiftwidth
-
-    elseif l:line =~# '^\k\+.*=\s*\%(do\)\?$'
         let l:indent = match(l:line, '\S') + &shiftwidth
 
-    elseif l:line =~# '\[[^\]]*$'
-        let l:indent = match(l:line, '\[')
-
-    elseif l:line =~# '{[^}]*$'
-        let l:indent = match(l:line, '{')
+    " when the line ends in a do, indent by shiftWidth
+    elseif l:line =~# '^\k\+.*=\s*\%(do\)\?$'
+        let l:indent = match(l:line, '\S') + &shiftwidth
 
     elseif l:line =~# 'module.*($'
         let l:indent = match(l:line, '\S') + &shiftwidth
 
+    " indent to the last open list bracket
+    elseif l:line =~# '\[[^\]]*$'
+        let l:indent = match(l:line, '\[')
+
+    " indent to the last open paren
     elseif l:line =~# '([^)]*$'
         let l:indent = match(l:line, '(')
 
+    " indent case arms by shiftWidth
     elseif l:line =~# '\<case\>.*\<of\>'
         let l:indent = match(l:line, '\S') + &shiftwidth
 
+    " indent else branches on their own line to the 'then' token
     elseif l:line =~# '\<if\>.*\<then\>.*\%(\<else\>\)\@!'
         let l:indent = match(l:line, '\<then\>')
 
+    " indent the arms of an if by 3
     elseif l:line =~# '\<if\>'
         let l:indent = match(l:line, '\<if\>') + 3
 
