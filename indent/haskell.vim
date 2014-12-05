@@ -1,8 +1,8 @@
 
 
-if exists('b:did_indent')
-    finish
-endif
+"if exists('b:did_indent')
+"    finish
+"endif
 
 let b:did_indent = 1
 
@@ -22,9 +22,12 @@ function! GetBlockMarker(line)
       " would this character open a block?
       if has_key(l:lev, l:char)
 
+          echom l:char
+          echom l:lev[l:char]
+
           " are there any closed blocks that this would have opened?
           if l:lev[l:char] == 0
-              break;
+              return l:i
           else
               let l:lev[l:char] -= 1
           endif
@@ -38,7 +41,7 @@ function! GetBlockMarker(line)
 
   endwhile
 
-  return l:i
+  return 0
 
 endfunction
 
