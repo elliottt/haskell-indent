@@ -9,6 +9,38 @@ let b:did_indent = 1
 setlocal indentexpr=GetHaskellIndent(v:lnum)
 setlocal indentkeys=!^F,o,O
 
+function! GetBlockMarker(line)
+
+  let l:i     = match(a:line, '$') - 1
+  let l:lev   = { '{': 0, '(': 0, '[': 0 }
+  let l:close = { '}': '{', ')': '(', ']': '[' }
+
+  while l:i >= 0
+
+      let l:char = a:line[l:i]
+
+      " would this character open a block?
+      if has_key(l:lev, l:char)
+
+          " are there any closed blocks that this would have opened?
+          if l:lev[l:char] == 0
+              break;
+          else
+              let l:lev[l:char] -= 1
+          endif
+
+      " would this character close a block?
+      elseif has_key(l:close, l:char)
+          let l:lev[l:close[l:char]] += 1
+      endif
+
+      let l:i -= 1
+
+  endwhile
+
+  return l:i
+
+endfunction
 
 function! GetHaskellIndent(lnum)
     " the line above the current line
@@ -42,7 +74,7 @@ function! GetHaskellIndent(lnum)
     elseif l:line =~# '\[[^\]]*$' " open bracket
         || l:line =~# '([^)]*$'   " open paren
         || l:line =~# '{[^}]*$'   " open curly
-        let l:indent = match(l:line, '\(\[\|(\|{\)[^\[({]*$')
+        let l:indent = GetBlockMarker(l:line)
 
     " indent case arms by shiftWidth
     elseif l:line =~# '\<case\>.*\<of\>'
@@ -90,3 +122,4 @@ function! GetHaskellIndent(lnum)
 
     return l:indent
 endfunction
+
