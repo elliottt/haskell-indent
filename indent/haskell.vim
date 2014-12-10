@@ -23,10 +23,10 @@ function! GetBlockMarker(line)
       if has_key(l:lev, l:char)
 
           " are there any closed blocks that this would have opened?
-          if l:lev[l:char] == 0
-              return l:i
-          else
+          if l:lev[l:char] > 0
               let l:lev[l:char] -= 1
+          else
+              return l:i
           endif
 
       " would this character close a block?
@@ -71,9 +71,7 @@ function! GetHaskellIndent(lnum)
         let l:indent = match(l:line, '\S') + &shiftwidth
 
     " indent to the last open list bracket/open paren/open brace
-    elseif l:line =~# '\[[^\]]*$' " open bracket
-        || l:line =~# '([^)]*$'   " open paren
-        || l:line =~# '{[^}]*$'   " open curly
+    elseif l:line =~# '\(\[[^\]]*\|([^)]*\|{[^}]*\)$'
         let l:indent = GetBlockMarker(l:line)
 
     " indent case arms by shiftWidth
