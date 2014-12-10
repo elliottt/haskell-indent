@@ -55,16 +55,9 @@ function! GetHaskellIndent(lnum)
     " the indent level of the previous line
     let l:indent = indent(a:lnum - 1)
 
-    " when in a data or newtype declaration, indent to the '='
-    if l:line =~# '^\(data\|newtype\)\>.*=.\+'
-        let l:indent = match(l:line, '=')
-
-    " when in a GADT, class, or instance, just indent by shiftWidth
-    elseif l:line =~# '^data\>[^=]\+\|^class\>\|^instance\>'
-        let l:indent = match(l:line, '\S') + &shiftwidth
 
     " when the line ends in a do, indent by shiftWidth
-    elseif l:line =~# '^\k\+.*=\s*\%(do\)\?$'
+    if l:line =~# '^\k\+.*=\s*\%(do\)\?$'
         let l:indent = match(l:line, '\S') + &shiftwidth
 
     elseif l:line =~# 'module.*($'
@@ -73,6 +66,14 @@ function! GetHaskellIndent(lnum)
     " indent to the last open list bracket/open paren/open brace
     elseif l:line =~# '\(\[[^\]]*\|([^)]*\|{[^}]*\)$'
         let l:indent = GetBlockMarker(l:line)
+
+    " when in a data or newtype declaration, indent to the '='
+    elseif l:line =~# '^\(data\|newtype\)\>.*=.\+'
+        let l:indent = match(l:line, '=')
+
+    " when in a GADT, class, or instance, just indent by shiftWidth
+    elseif l:line =~# '^data\>[^=]\+\|^class\>\|^instance\>'
+        let l:indent = match(l:line, '\S') + &shiftwidth
 
     " indent case arms by shiftWidth
     elseif l:line =~# '\<case\>.*\<of\>'
